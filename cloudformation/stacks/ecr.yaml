@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR stack (container repository)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: crud-api
+
+Resources:
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${ProjectName}-api'
+
+Outputs:
+  ECRRepositoryName:
+    Value: !Ref ECRRepository
+  ECRRepositoryUri:
+    Value: !GetAtt ECRRepository.RepositoryUri

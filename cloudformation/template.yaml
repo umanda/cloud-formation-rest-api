@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Root stack for ECS Fargate API (nested service stacks)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: crud-api
+  Environment:
+    Type: String
+    Default: dev
+  ContainerPort:
+    Type: Number
+    Default: 8000
+
+Resources:
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: stacks/network.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+
+  ECRStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: stacks/ecr.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+
+  ECSStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - NetworkStack
+      - ECRStack
+    Properties:
+      TemplateURL: stacks/ecs.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        ContainerPort: !Ref ContainerPort
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        VpcCidr: !GetAtt NetworkStack.Outputs.VpcCidr
+        PublicSubnetIds: !Join
+          - ","
+          - - !GetAtt NetworkStack.Outputs.PublicSubnetA
+            - !GetAtt NetworkStack.Outputs.PublicSubnetB
+        EcrRepositoryName: !GetAtt ECRStack.Outputs.ECRRepositoryName
+
+  ApiGatewayStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - ECSStack
+    Properties:
+      TemplateURL: stacks/apigateway.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+        LoadBalancerArn: !GetAtt ECSStack.Outputs.LoadBalancerArn
+        LoadBalancerDnsName: !GetAtt ECSStack.Outputs.LoadBalancerDnsName
+
+Outputs:
+  ECRRepositoryUri:
+    Value: !GetAtt ECRStack.Outputs.ECRRepositoryUri
+  ECSCluster:
+    Value: !GetAtt ECSStack.Outputs.ECSClusterName
+  ECSService:
+    Value: !GetAtt ECSStack.Outputs.ECSServiceName
+  LoadBalancerURL:
+    Value: !Join
+      - ""
+      - - "http://"
+        - !GetAtt ECSStack.Outputs.LoadBalancerDnsName
+  ApiGatewayURL:
+    Value: !GetAtt ApiGatewayStack.Outputs.ApiGatewayURL
+  AccountId:
+    Value: !Ref AWS::AccountId
