@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Root stack for LocalStack Free (network + mock API only)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: crud-api
+  Environment:
+    Type: String
+    Default: dev
+  TemplateBucket:
+    Type: String
+    Default: cf-templates
+  TemplatePrefix:
+    Type: String
+    Default: stacks
+
+Resources:
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'http://s3.localhost.localstack.cloud:4566/${TemplateBucket}/${TemplatePrefix}/network.yaml'
+      Parameters:
+        ProjectName: !Ref ProjectName
+
+  MockApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'http://s3.localhost.localstack.cloud:4566/${TemplateBucket}/${TemplatePrefix}/mock-api.yaml'
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environment: !Ref Environment
+
+Outputs:
+  VpcId:
+    Value: !GetAtt NetworkStack.Outputs.VpcId
+  VpcCidr:
+    Value: !GetAtt NetworkStack.Outputs.VpcCidr
+  PublicSubnetA:
+    Value: !GetAtt NetworkStack.Outputs.PublicSubnetA
+  PublicSubnetB:
+    Value: !GetAtt NetworkStack.Outputs.PublicSubnetB
+  MockApiBaseUrl:
+    Value: !GetAtt MockApiStack.Outputs.MockApiBaseUrl
+  MockHealthUrl:
+    Value: !GetAtt MockApiStack.Outputs.MockHealthUrl
+  LocalStackFreeNote:
+    Value: 'ECR/ECS/ELBv2 are excluded in LocalStack Free template. Use mock API for endpoint testing.'

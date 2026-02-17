@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Mock API stack for LocalStack Free (API Gateway REST + MOCK integration)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: crud-api
+  Environment:
+    Type: String
+    Default: dev
+
+Resources:
+  MockRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${ProjectName}-mock-api'
+
+  HealthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MockRestApi
+      ParentId: !GetAtt MockRestApi.RootResourceId
+      PathPart: health
+
+  HealthGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MockRestApi
+      ResourceId: !Ref HealthResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |
+                {"status":"ok","mode":"localstack-free-mock"}
+      MethodResponses:
+        - StatusCode: 200
+
+  RootGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MockRestApi
+      ResourceId: !GetAtt MockRestApi.RootResourceId
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |
+                {"message":"mock api running","mode":"localstack-free-mock"}
+      MethodResponses:
+        - StatusCode: 200
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - HealthGetMethod
+      - RootGetMethod
+    Properties:
+      RestApiId: !Ref MockRestApi
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref MockRestApi
+      DeploymentId: !Ref ApiDeployment
+      StageName: !Ref Environment
+
+Outputs:
+  ApiId:
+    Value: !Ref MockRestApi
+  MockApiBaseUrl:
+    Value: !Sub 'http://${MockRestApi}.execute-api.localhost.localstack.cloud:4566/${Environment}'
+  MockHealthUrl:
+    Value: !Sub 'http://${MockRestApi}.execute-api.localhost.localstack.cloud:4566/${Environment}/health'

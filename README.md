@@ -66,7 +66,8 @@ final-project/
 ├── README.md                    ← You are here
 ├── docs/
 │   ├── AWS-SETUP.md            ← Complete AWS beginner guide
-│   └── ARCHITECTURE.md         ← How everything works
+│   ├── ARCHITECTURE.md         ← How everything works
+│   └── LOCALSTACK-RUNBOOK.md   ← LocalStack Free vs Pro commands
 ├── cloudformation/
 │   ├── template.yaml           ← Root CloudFormation stack
 │   └── stacks/                 ← Service-specific nested stacks
@@ -80,9 +81,22 @@ final-project/
 ├── docker/
 │   └── Dockerfile              ← Container definition
 └── scripts/
-    ├── deploy.sh               ← Deploy everything (⭐ main script)
-    ├── test-api.sh             ← Test all endpoints
-    └── cleanup.sh              ← Delete all resources
+    ├── deploy.sh               ← AWS deploy (legacy path, still works)
+    ├── test-api.sh             ← AWS test (legacy path, still works)
+    ├── cleanup.sh              ← AWS cleanup (legacy path, still works)
+    ├── aws/                    ← Organized AWS prod scripts
+    │   ├── prod-deploy.sh
+    │   ├── prod-test.sh
+    │   └── prod-remove.sh
+    └── localstack/
+        ├── free/
+        │   ├── deploy.sh
+        │   ├── test.sh
+        │   └── remove.sh
+        └── pro/
+            ├── deploy.sh
+            ├── test.sh
+            └── remove.sh
 ```
 
 ## 🏗️ What Gets Created
@@ -112,9 +126,13 @@ final-project/
 ```bash
 # Deploy everything (first time or updates)
 ./scripts/deploy.sh
+# Or organized AWS prod path
+./scripts/aws/prod-deploy.sh
 
 # Test the API
 ./scripts/test-api.sh
+# Or organized AWS prod path
+./scripts/aws/prod-test.sh
 
 # View container logs
 aws logs tail /ecs/crud-api-fargate --follow
@@ -130,6 +148,8 @@ aws ecs update-service \
 
 # Delete everything (stop costs)
 ./scripts/cleanup.sh
+# Or organized AWS prod path
+./scripts/aws/prod-remove.sh
 ```
 
 ## 🧪 Testing Your API
@@ -177,6 +197,7 @@ curl -X DELETE $API_URL/items/1
 
 - **AWS-SETUP.md** - Complete AWS setup for beginners
 - **ARCHITECTURE.md** - Understanding VPC, Fargate, networking
+- **LOCALSTACK-RUNBOOK.md** - LocalStack Free/Pro deployment + mock API testing
 - **README.md** (this file) - Quick reference
 
 ## 🔧 Modify Your API
