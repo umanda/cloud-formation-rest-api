@@ -67,7 +67,8 @@ final-project/
 ├── docs/
 │   ├── AWS-SETUP.md            ← Complete AWS beginner guide
 │   ├── ARCHITECTURE.md         ← How everything works
-│   └── LOCALSTACK-RUNBOOK.md   ← LocalStack Free vs Pro commands
+│   ├── LOCALSTACK-RUNBOOK.md   ← LocalStack Free vs Pro commands
+│   └── AWS-SDK-RUNBOOK.md      ← Python boto3 alternative to CF
 ├── cloudformation/
 │   ├── template.yaml           ← Root CloudFormation stack
 │   └── stacks/                 ← Service-specific nested stacks
@@ -80,6 +81,11 @@ final-project/
 │   └── requirements.txt        ← Python dependencies  
 ├── docker/
 │   └── Dockerfile              ← Container definition
+├── sdk_python/
+│   ├── deploy.py               ← Deploy with boto3
+│   ├── cleanup.py              ← Cleanup with boto3
+│   ├── test_api.py             ← Basic API tests
+│   └── requirements.txt
 └── scripts/
     ├── deploy.sh               ← AWS deploy (legacy path, still works)
     ├── test-api.sh             ← AWS test (legacy path, still works)
@@ -87,7 +93,10 @@ final-project/
     ├── aws/                    ← Organized AWS prod scripts
     │   ├── prod-deploy.sh
     │   ├── prod-test.sh
-    │   └── prod-remove.sh
+    │   ├── prod-remove.sh
+    │   ├── sdk-deploy.sh
+    │   ├── sdk-test.sh
+    │   └── sdk-remove.sh
     └── localstack/
         ├── free/
         │   ├── deploy.sh
@@ -150,6 +159,11 @@ aws ecs update-service \
 ./scripts/cleanup.sh
 # Or organized AWS prod path
 ./scripts/aws/prod-remove.sh
+
+# Python SDK alternative (no CloudFormation)
+./scripts/aws/sdk-deploy.sh
+./scripts/aws/sdk-test.sh
+./scripts/aws/sdk-remove.sh
 ```
 
 ## 🧪 Testing Your API
@@ -198,6 +212,7 @@ curl -X DELETE $API_URL/items/1
 - **AWS-SETUP.md** - Complete AWS setup for beginners
 - **ARCHITECTURE.md** - Understanding VPC, Fargate, networking
 - **LOCALSTACK-RUNBOOK.md** - LocalStack Free/Pro deployment + mock API testing
+- **AWS-SDK-RUNBOOK.md** - Deploy same stack using Python SDK (boto3)
 - **README.md** (this file) - Quick reference
 
 ## 🔧 Modify Your API
